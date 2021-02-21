@@ -2,11 +2,17 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"path/filepath"
 	"sync"
 	"text/template"
+
+	"github.com/bradgwest/gbp/pkg/auth"
+	"github.com/markbates/goth"
+	"github.com/markbates/goth/providers/github"
 )
 
 // templateHandler represents a simple template
@@ -29,8 +35,14 @@ func main() {
 	var addr = flag.String("addr", ":8080", "The address of the application")
 	flag.Parse()
 
+	goth.UseProviders(
+		github.New(os.Getenv("GITHUB_KEY"), os.Getenv("GITHUB_SECRET"), fmt.Sprintf("http://localhost%s/auth/callback/github", *addr)),
+	)
+
 	r := newRoom()
-	http.Handle("/", &templateHandler{filename: "chat.html"})
+	http.Handle("/chat", auth.Must(&templateHandler{filename: "chat.html"}))
+	http.Handle("/login", &templateHandler{filename: "login.html"})
+	http.HandleFunc("/auth/", auth.LoginHandler)
 	http.Handle("/room", r)
 
 	// start the room
