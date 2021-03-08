@@ -1,2 +1,8 @@
 *.env
 db/**
+
+# binaries
+cmd/chat/chat
+cmd/counter/counter
+cmd/sprinkle/sprinkle
+cmd/twittervotes/twittervotes
