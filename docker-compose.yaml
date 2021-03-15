@@ -1,0 +1,9 @@
+services:
+  mongo:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      # mount path relative to the compose file, so it's persisted across sessions
+      # TODO: make this variable
+      - ./db/mongo:/data/db
