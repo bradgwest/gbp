@@ -2,6 +2,7 @@
 db/**
 
 # binaries
+cmd/api/api
 cmd/chat/chat
 cmd/counter/counter
 cmd/sprinkle/sprinkle
