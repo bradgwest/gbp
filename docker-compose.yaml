@@ -2,7 +2,7 @@ services:
   mongo:
     image: mongo:latest
     ports:
-      - 27017
+      - "27017:27017"
     volumes:
       # mount path relative to the compose file, so it's persisted across sessions
       - ${DB_MOUNT_PATH}:/data/db
@@ -10,8 +10,8 @@ services:
   nsqd:
     image: nsqio/nsq
     ports:
-      - 4150
-      - 4151
+      - "4150:4150"
+      - "4151:4151"
     command: ["/nsqd", "-broadcast-address", "lookupd", "-lookupd-tcp-address", "lookupd:4160"]
     depends_on:
       - lookupd
@@ -19,6 +19,6 @@ services:
   lookupd:
     image: nsqio/nsq
     ports:
-      - 4160
-      - 4161
+      - "4160:4160"
+      - "4161:4161"
     command: /nsqlookupd

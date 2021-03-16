@@ -56,6 +56,7 @@ func main() {
 		addr  = flag.String("addr", ":8080", "endpoint address")
 		mongo = flag.String("mongo", "localhost", "mongodb address")
 	)
+	flag.Parse()
 
 	log.Println("Dialing mongo", *mongo)
 	db, err := mgo.Dial(*mongo)
