@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"log"
 	"os"
 	"os/signal"
@@ -15,9 +16,9 @@ import (
 
 var db *mgo.Session
 
-func dialdb() (err error) {
-	log.Println("dialing mongodb: localhost")
-	db, err = mgo.Dial("localhost")
+func dialdb(host string) (err error) {
+	log.Println("dialing mongodb: ", host)
+	db, err = mgo.Dial(host)
 	return
 }
 
@@ -111,9 +112,9 @@ func startTwitterStream(stopchan <-chan struct{}, votes chan<- string) <-chan st
 	return stoppedchan
 }
 
-func publishVotes(votes <-chan string) <-chan struct{} {
+func publishVotes(votes <-chan string, nsqAddr string) <-chan struct{} {
 	stopchan := make(chan struct{}, 1)
-	pub, _ := nsq.NewProducer("localhost:4150", nsq.NewConfig())
+	pub, _ := nsq.NewProducer(nsqAddr, nsq.NewConfig())
 
 	go func() {
 		for vote := range votes {
@@ -130,7 +131,14 @@ func publishVotes(votes <-chan string) <-chan struct{} {
 }
 
 func main() {
-	var stoplock sync.Mutex
+	var (
+		loadOnce sync.Once
+		stoplock sync.Mutex
+		mongo    = flag.String("mongoAddr", "localhost", "mongodb address")
+		nsqAddr  = flag.String("nsqAddr", "localhost:4150", "nsq address")
+	)
+	flag.Parse()
+
 	stop := false
 	stopChan := make(chan struct{}, 1)
 	signalChan := make(chan os.Signal, 1)
@@ -147,13 +155,20 @@ func main() {
 
 	signal.Notify(signalChan, syscall.SIGINT, syscall.SIGTERM)
 
-	if err := dialdb(); err != nil {
+	if err := dialdb(*mongo); err != nil {
 		log.Fatalln("failed to dial MongoDB:", err)
 	}
 	defer closedb()
 
+	// TODO would need to parse this from cmd line, or hard code
+	// loadOnce.Do(func() {
+	// 	if err := db.DB("ballots").C("polls").Insert(); err != nil {
+	// 		log.Fatalln("failed to load mongodb:", err)
+	// 	}
+	// })
+
 	votes := make(chan string)
-	publisherStoppedChan := publishVotes(votes)
+	publisherStoppedChan := publishVotes(votes, *nsqAddr)
 	twitterStoppedChan := startTwitterStream(stopChan, votes)
 
 	go func() {

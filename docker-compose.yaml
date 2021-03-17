@@ -12,7 +12,7 @@ services:
     ports:
       - "4150:4150"
       - "4151:4151"
-    command: ["/nsqd", "-broadcast-address", "lookupd", "-lookupd-tcp-address", "lookupd:4160"]
+    command: ["/nsqd", "-broadcast-address", "0.0.0.0", "-lookupd-tcp-address", "lookupd:4160"]
     depends_on:
       - lookupd
 

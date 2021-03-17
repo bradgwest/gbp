@@ -57,6 +57,12 @@ func doCount(countsLock *sync.Mutex, counts *map[string]int, pollData *mgo.Colle
 }
 
 func main() {
+	var (
+		mongoAddr  = flag.String("mongoAddr", "localhost", "mongodb address")
+		lookupAddr = flag.String("lookupAddr", "localhost:4161", "Address and port for nsq lookup")
+	)
+	flag.Parse()
+
 	defer func() {
 		if fatalErr != nil {
 			os.Exit(1)
@@ -64,7 +70,7 @@ func main() {
 	}()
 
 	log.Println("connecting to database...")
-	db, err := mgo.Dial("localhost")
+	db, err := mgo.Dial(*mongoAddr)
 	if err != nil {
 		fatal(err)
 		return
@@ -83,6 +89,7 @@ func main() {
 		fatal(err)
 		return
 	}
+	log.Println("connected to nsq")
 
 	q.AddHandler(nsq.HandlerFunc(func(m *nsq.Message) error {
 		countsLock.Lock()
@@ -95,7 +102,7 @@ func main() {
 		return nil
 	}))
 
-	if err := q.ConnectToNSQLookupd("localhost:4161"); err != nil {
+	if err := q.ConnectToNSQLookupd(*lookupAddr); err != nil {
 		fatal(err)
 		return
 	}
