@@ -37,7 +37,7 @@ func (s *Server) handlePollsGet(w http.ResponseWriter, r *http.Request) {
 	session := s.db.Copy()
 	defer session.Close()
 
-	c := session.DB("Ballots").C("polls")
+	c := session.DB("ballots").C("polls")
 	var q *mgo.Query
 	p := path.New(r.URL.Path)
 	if p.HasID() {
@@ -45,7 +45,7 @@ func (s *Server) handlePollsGet(w http.ResponseWriter, r *http.Request) {
 		q = c.FindId(bson.ObjectIdHex(p.ID))
 	} else {
 		// get all polls
-		q = c.FindId(nil)
+		q = c.Find(nil)
 	}
 
 	var result []*poll
