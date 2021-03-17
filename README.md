@@ -13,3 +13,12 @@ docker-compose exec mongo bash
 export POLL='{"title": "Test Poll", "options": ["jimmycarter", "roygoode", "richardnixon", "arnoldschwarzenegger", "berniesanders"]}'
 echo $POLL | mongoimport --db=ballots --collection=polls
 ```
+
+## Running Programs
+
+```sh
+# from cmd/twittervotes
+./twittervotes -mongoAddr 0.0.0.0:27017 -nsqAddr 0.0.0.0:4150
+# from cmd/counter
+./counter -lookupAddr 0.0.0.0:4161 -mongoAddr 0.0.0.0:27017
+```
